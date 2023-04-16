@@ -8,7 +8,7 @@ def init_board(rows, columns):
     return board
 
 
-def cell_loc(name=None):
+def cell_loc(name):
     #this function receives as input a coordinate, interprets it into 
     #list indexes and returns the row and column indexes of the coordinate
     if helper.is_int(name[1:]) == False:
@@ -73,6 +73,10 @@ def fire_torpedo(board, loc):
     #it recieves as input a board and location to fire at
     #if it hits a ship or water, it will change to the relevant tile
     #it then returns the board
+    if loc[0] not in range(len(board)) or loc[1] not in range(len(board[0])):
+        return board
+    elif board[loc[0]][loc[1]] != helper.WATER:
+        return board
     if valid_ship(board, 1, loc) == True:
         board[loc[0]][loc[1]] = helper.HIT_WATER
     elif valid_ship(board, 1, loc) == False:
@@ -151,14 +155,14 @@ def main():
         loc = loc_input.capitalize() #"letternumber" input. 
         #lower case letter is valid, we
         #don't want an error on the receiving end of the coordinates
-        if cell_loc(loc) != None and cell_loc(loc) in\
-        locations(helper.NUM_ROWS, helper.NUM_COLUMNS)\
-        and pc_board[cell_loc(loc)[0]][cell_loc(loc)[1]] == helper.WATER:
-            pass #this is a valid place to hit a torpedo 
+        if cell_loc(loc) != None:
+            hidden_board = fire_torpedo(hidden_board, cell_loc(loc))#this is a valid place to hit a torpedo 
         else:
             print("Invalid target.")
             continue #it's not valid, back to top of the loop.
-        pc_board = fire_torpedo(pc_board, cell_loc(loc))
+        if hidden_board == board_before_firing:
+            print("Invalid target.")
+            continue #it's not valid, back to top of the loop.
         if cell_loc(loc) in all_ship_locations:
             pc_board[cell_loc(loc)[0]][cell_loc(loc)[1]] = helper.HIT_SHIP
             hidden_board[cell_loc(loc)[0]][cell_loc(loc)[1]] = helper.HIT_SHIP
@@ -176,9 +180,9 @@ def main():
         else:
             empty_player_board[pc_hit_loc[0]][pc_hit_loc[1]] = helper.HIT_WATER
         if player_hit_ships == ship_loc_sum or\
-            pc_hit_ships == ship_loc_sum: #all ships are hit, so there's a winner
-            game_over = True 
-            break #game over!
+            pc_hit_ships == ship_loc_sum:
+            game_over = True #see above
+            break
         helper.print_board(player_board, pc_board) #see turn results
     game_is_over(player_board, hidden_board)
 
